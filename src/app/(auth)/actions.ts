@@ -9,13 +9,19 @@ const LoginSchema = z.object({
   password: z.string().min(1, { error: "Ingresa tu contraseña." }),
 });
 
-const SignupSchema = z.object({
-  name: z.string().min(2, { error: "Tu nombre debe tener al menos 2 letras." }).trim(),
-  email: z.email({ error: "Ingresa un correo válido." }).trim(),
-  password: z
-    .string()
-    .min(8, { error: "La contraseña debe tener al menos 8 caracteres." }),
-});
+const SignupSchema = z
+  .object({
+    name: z.string().min(2, { error: "Tu nombre debe tener al menos 2 letras." }).trim(),
+    email: z.email({ error: "Ingresa un correo válido." }).trim(),
+    password: z
+      .string()
+      .min(8, { error: "La contraseña debe tener al menos 8 caracteres." }),
+    confirmPassword: z.string(),
+  })
+  .refine((d) => d.password === d.confirmPassword, {
+    error: "Las contraseñas no coinciden.",
+    path: ["confirmPassword"],
+  });
 
 export type AuthState = {
   errors?: Record<string, string[]>;
@@ -53,6 +59,7 @@ export async function signup(
     name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
   });
 
   if (!fields.success) {

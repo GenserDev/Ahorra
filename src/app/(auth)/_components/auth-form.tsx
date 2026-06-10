@@ -3,32 +3,33 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { login, signup, type AuthState } from "../actions";
+import { FloatingField } from "@/components/ui/floating-field";
+import { SocialButtons } from "./social-buttons";
 
 type Mode = "login" | "signup";
 
 const COPY = {
   login: {
-    title: "Inicia sesión",
-    subtitle: "Bienvenido de vuelta a Ahorra.",
-    submit: "Entrar",
-    footer: "¿No tienes cuenta?",
-    footerLink: "Crear una",
+    title: "Bienvenido de vuelta a Ahorra",
+    subtitle: "Inicia sesión para seguir tu progreso y alcanzar tus metas de ahorro.",
+    submit: "Iniciar sesión",
+    footer: "¿Nuevo en Ahorra?",
+    footerLink: "Crea tu cuenta",
     footerHref: "/signup",
+    divider: "O continúa con",
+    verb: "iniciar sesión",
   },
   signup: {
-    title: "Crea tu cuenta",
-    subtitle: "Empieza a controlar tus gastos hoy.",
-    submit: "Registrarme",
+    title: "Comienza tu camino con Ahorra",
+    subtitle: "Crea tu cuenta y toma el control de tu futuro financiero.",
+    submit: "Crear mi cuenta",
     footer: "¿Ya tienes cuenta?",
     footerLink: "Inicia sesión",
     footerHref: "/login",
+    divider: "O regístrate con",
+    verb: "registrarte",
   },
 } as const;
-
-function FieldError({ messages }: { messages?: string[] }) {
-  if (!messages?.length) return null;
-  return <p className="mt-1 text-sm text-red-600">{messages[0]}</p>;
-}
 
 export function AuthForm({ mode }: { mode: Mode }) {
   const action = mode === "login" ? login : signup;
@@ -37,61 +38,117 @@ export function AuthForm({ mode }: { mode: Mode }) {
     undefined,
   );
   const copy = COPY[mode];
+  const e = state?.errors;
 
   return (
-    <div className="w-full max-w-sm">
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">{copy.title}</h1>
-        <p className="mt-1 text-sm text-neutral-500">{copy.subtitle}</p>
-      </div>
+    <div>
+      <header className="mb-7">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          {copy.title}
+        </h1>
+        <p className="mt-2 text-sm text-muted">{copy.subtitle}</p>
+      </header>
 
       <form action={formAction} className="space-y-4">
         {mode === "signup" && (
-          <div>
-            <label htmlFor="name" className="mb-1 block text-sm font-medium">
-              Nombre
-            </label>
-            <input
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FloatingField
               id="name"
               name="name"
-              type="text"
+              label="Nombre completo"
               autoComplete="name"
-              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+              error={e?.name?.[0]}
             />
-            <FieldError messages={state?.errors?.name} />
+            <FloatingField
+              id="email"
+              name="email"
+              type="email"
+              label="Correo electrónico"
+              autoComplete="email"
+              error={e?.email?.[0]}
+            />
           </div>
         )}
 
-        <div>
-          <label htmlFor="email" className="mb-1 block text-sm font-medium">
-            Correo
-          </label>
-          <input
+        {mode === "login" && (
+          <FloatingField
             id="email"
             name="email"
             type="email"
+            label="Correo electrónico"
             autoComplete="email"
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+            error={e?.email?.[0]}
           />
-          <FieldError messages={state?.errors?.email} />
-        </div>
+        )}
 
-        <div>
-          <label htmlFor="password" className="mb-1 block text-sm font-medium">
-            Contraseña
-          </label>
-          <input
+        {mode === "signup" ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FloatingField
+              id="password"
+              name="password"
+              type="password"
+              label="Contraseña"
+              autoComplete="new-password"
+              error={e?.password?.[0]}
+            />
+            <FloatingField
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              label="Confirmar contraseña"
+              autoComplete="new-password"
+              error={e?.confirmPassword?.[0]}
+            />
+          </div>
+        ) : (
+          <FloatingField
             id="password"
             name="password"
             type="password"
-            autoComplete={mode === "login" ? "current-password" : "new-password"}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+            label="Contraseña"
+            autoComplete="current-password"
+            error={e?.password?.[0]}
           />
-          <FieldError messages={state?.errors?.password} />
-        </div>
+        )}
+
+        {mode === "login" ? (
+          <div className="flex items-center justify-between text-sm">
+            <label className="flex cursor-pointer items-center gap-2 text-muted">
+              <input
+                type="checkbox"
+                name="remember"
+                className="h-4 w-4 rounded border-input accent-primary"
+              />
+              Recordarme
+            </label>
+            <Link href="/login" className="font-medium text-primary hover:underline">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
+        ) : (
+          <label className="flex cursor-pointer items-start gap-2 text-sm text-muted">
+            <input
+              type="checkbox"
+              name="terms"
+              required
+              className="mt-0.5 h-4 w-4 rounded border-input accent-primary"
+            />
+            <span>
+              Acepto los{" "}
+              <Link href="/login" className="font-medium text-primary hover:underline">
+                Términos de Servicio
+              </Link>{" "}
+              y la{" "}
+              <Link href="/login" className="font-medium text-primary hover:underline">
+                Política de Privacidad
+              </Link>
+              .
+            </span>
+          </label>
+        )}
 
         {state?.message && (
-          <p className="rounded-lg bg-neutral-100 px-3 py-2 text-sm text-neutral-700">
+          <p className="rounded-xl bg-foreground/5 px-4 py-3 text-sm text-foreground">
             {state.message}
           </p>
         )}
@@ -99,15 +156,23 @@ export function AuthForm({ mode }: { mode: Mode }) {
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded-lg bg-neutral-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-neutral-800 disabled:opacity-50"
+          className="h-12 w-full rounded-xl bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover disabled:opacity-60"
         >
           {pending ? "Procesando…" : copy.submit}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-neutral-500">
+      <div className="my-6 flex items-center gap-4">
+        <span className="h-px flex-1 bg-border" />
+        <span className="text-xs text-muted">{copy.divider}</span>
+        <span className="h-px flex-1 bg-border" />
+      </div>
+
+      <SocialButtons verb={copy.verb} />
+
+      <p className="mt-7 text-center text-sm text-muted">
         {copy.footer}{" "}
-        <Link href={copy.footerHref} className="font-medium text-neutral-900 underline">
+        <Link href={copy.footerHref} className="font-semibold text-primary hover:underline">
           {copy.footerLink}
         </Link>
       </p>
