@@ -19,8 +19,13 @@ create table if not exists public.profiles (
   name        text,
   avatar_url  text,
   currency    text not null default 'GTQ',   -- ISO 4217: GTQ, USD, MXN...
+  onboarded   boolean not null default false, -- completó el flujo de onboarding
   created_at  timestamptz not null default now()
 );
+
+-- Si la tabla ya existía sin la columna, añádela (idempotente):
+alter table public.profiles
+  add column if not exists onboarded boolean not null default false;
 
 -- ----------------------------------------------------------------------------
 -- 2. MONTHS  (el sueldo se registra por mes; un mes agrupa los gastos)
