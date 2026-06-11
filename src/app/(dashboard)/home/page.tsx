@@ -14,9 +14,12 @@ export default async function HomePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("name, currency")
+    .select("name, currency, onboarded")
     .eq("id", user.id)
     .single();
+
+  // Usuario nuevo sin configurar → al onboarding.
+  if (!profile?.onboarded) redirect("/onboarding");
 
   const displayName = profile?.name ?? user.email;
 
